@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.timer-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+h1 {
+    font-weight: 300;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.input-group {
+    margin: 25px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+input[type="time"] {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: #4caf50;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.countdown-display {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin: 20px 0;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}
+
+.status-msg {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="timer-box">
+            <h1>Countdown Timer</h1>
+            <p>Vaqtni kiriting (masalan, 17:30):</p>
+            
+            <div class="input-group">
+                <input type="time" id="targetTime" step="1">
+                <button onclick="startTimer()">Boshlash</button>
+            </div>
+
+            <div id="display" class="countdown-display">
+                00:00:00
+            </div>
+            
+            <div id="status" class="status-msg">Vaqtni belgilang</div>
+        </div>
+    </div>
+<script>
+let countdownInterval;
+
+function startTimer() {
+    const inputTime = document.getElementById('targetTime').value;
+    const display = document.getElementById('display');
+    const status = document.getElementById('status');
+
+    if (!inputTime) {
+        alert("Iltimos, vaqtni kiriting!");
+        return;
+    }
+
+    // Har qanday eski intervalni to'xtatamiz
+    clearInterval(countdownInterval);
+
+    // Maqsad qilingan vaqtni bugungi sanaga bog'laymiz
+    const now = new Date();
+    const target = new Date();
+    const [hours, minutes] = inputTime.split(':');
+    
+    target.setHours(hours);
+    target.setMinutes(minutes);
+    target.setSeconds(0);
+
+    // Agar kiritilgan vaqt o'tib ketgan bo'lsa (ertangi kun uchun)
+    if (target < now) {
+        target.setDate(target.getDate() + 1);
+        status.innerText = "Ertangi kun uchun hisoblanmoqda...";
+    } else {
+        status.innerText = "Teskari hisob ketmoqda...";
+    }
+
+    countdownInterval = setInterval(() => {
+        const currentTime = new Date().getTime();
+        const distance = target.getTime() - currentTime;
+
+        if (distance < 0) {
+            clearInterval(countdownInterval);
+            display.innerText = "00:00:00";
+            status.innerText = "Vaqt tugadi!";
+            alert("Vaqt bo'ldi!");
+            return;
+        }
+
+        // Soat, minut va sekundlarni hisoblash
+        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Formatlash (01:05:08 ko'rinishida)
+        display.innerText = 
+            `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            
+    }, 1000);
+}
+</script>
+</body>
+</html>
