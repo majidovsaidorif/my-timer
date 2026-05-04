@@ -4,162 +4,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: cursive, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
+    /* Orqa fon o'lchamini kattalashtiramiz, shunda u harakatlanishi uchun joy qoladi */
     background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    background-size: 400% 400%;
+    
+    /* Animatsiyani ulaymiz: nomi "gradient", davomiyligi 15 soniya, cheksiz va mayin */
+    animation: gradient 15s ease infinite;
+    
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
+/* Animatsiya qoidalari */
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
 .container {
-    width: 100%;
-    max-width: 450px;
-    padding: 20px;
+	width: 100%;
+	max-width: 450px;
+	padding: 20px;
 }
 
 .timer-box {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 40px;
-    border-radius: 25px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(15px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	padding: 40px;
+	border-radius: 25px;
+	text-align: center;
+	color: white;
+	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 h1 {
-    font-weight: 300;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
+	font-weight: 300;
+	margin-bottom: 20px;
+	letter-spacing: 2px;
 }
 
 .input-group {
-    margin: 25px 0;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+	margin: 25px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: center;
+}
+
+.buttons {
+	display: flex;
+	gap: 10px;
 }
 
 input[type="time"] {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    font-size: 1.1rem;
-    background: rgba(255, 255, 255, 0.9);
+	padding: 10px;
+	border-radius: 8px;
+	border: none;
+	outline: none;
+	font-size: 1.1rem;
+	background: rgba(255, 255, 255, 0.9);
+	width: 100%;
 }
 
 button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    background: #4caf50;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+	padding: 10px 20px;
+	border-radius: 8px;
+	border: none;
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	transition: 0.3s;
 }
 
-button:hover {
-    background: #45a049;
-    transform: translateY(-2px);
-}
+.btn-start { background: #4caf50; }
+.btn-start:hover { background: #45a049; transform: translateY(-2px); }
+
+.btn-reset { background: #f44336; }
+.btn-reset:hover { background: #da190b; transform: translateY(-2px); }
 
 .countdown-display {
-    font-size: 3.5rem;
-    font-weight: bold;
-    margin: 20px 0;
-    font-family: 'Courier New', Courier, monospace;
-    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+	font-size: 3.5rem;
+	font-weight: bold;
+	margin: 20px 0;
+	font-family: cursive, 'Courier New', Courier, monospace;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
 }
 
 .status-msg {
-    font-size: 0.9rem;
-    opacity: 0.8;
+	font-size: 0.9rem;
+	opacity: 0.8;
 }
 </style>
 </head>
 <body>
     <div class="container">
         <div class="timer-box">
-            <h1>Countdown Timer</h1>
-            <p>Vaqtni kiriting (masalan, 17:30):</p>
+            <div id="display" class="countdown-display">00:00:00</div>
+            <h1>Teskari hisob taymeri</h1>
+            <p>Vaqtni kiriting:</p>
             
             <div class="input-group">
                 <input type="time" id="targetTime" step="1">
-                <button onclick="startTimer()">Boshlash</button>
-            </div>
-
-            <div id="display" class="countdown-display">
-                00:00:00
+                <div class="buttons">
+                    <button class="btn-start" onclick="startTimer()">Boshlash</button>
+                    <button class="btn-reset" onclick="resetTimer()">Tozalash</button>
+                </div>
             </div>
             
             <div id="status" class="status-msg">Vaqtni belgilang</div>
         </div>
     </div>
+
 <script>
 let countdownInterval;
 
+// Sahifa yuklanganda xotirani tekshirish
+window.onload = function() {
+    const savedTarget = localStorage.getItem('targetTimestamp');
+    if (savedTarget) {
+        runCountdown(parseInt(savedTarget));
+    }
+};
+
 function startTimer() {
     const inputTime = document.getElementById('targetTime').value;
-    const display = document.getElementById('display');
-    const status = document.getElementById('status');
-
     if (!inputTime) {
         alert("Iltimos, vaqtni kiriting!");
         return;
     }
 
-    // Har qanday eski intervalni to'xtatamiz
-    clearInterval(countdownInterval);
-
-    // Maqsad qilingan vaqtni bugungi sanaga bog'laymiz
     const now = new Date();
     const target = new Date();
-    const [hours, minutes] = inputTime.split(':');
+    const [hours, minutes, seconds] = inputTime.split(':');
     
     target.setHours(hours);
     target.setMinutes(minutes);
-    target.setSeconds(0);
+    target.setSeconds(seconds || 0);
 
     // Agar kiritilgan vaqt o'tib ketgan bo'lsa (ertangi kun uchun)
     if (target < now) {
         target.setDate(target.getDate() + 1);
-        status.innerText = "Ertangi kun uchun hisoblanmoqda...";
-    } else {
-        status.innerText = "Teskari hisob ketmoqda...";
     }
 
+    const targetTimestamp = target.getTime();
+    localStorage.setItem('targetTimestamp', targetTimestamp);
+    runCountdown(targetTimestamp);
+}
+
+function runCountdown(targetTimestamp) {
+    clearInterval(countdownInterval);
+    const display = document.getElementById('display');
+    const status = document.getElementById('status');
+
     countdownInterval = setInterval(() => {
-        const currentTime = new Date().getTime();
-        const distance = target.getTime() - currentTime;
+        const now = new Date().getTime();
+        const distance = targetTimestamp - now;
 
         if (distance < 0) {
             clearInterval(countdownInterval);
+            localStorage.removeItem('targetTimestamp');
             display.innerText = "00:00:00";
             status.innerText = "Vaqt tugadi!";
-            alert("Vaqt bo'ldi!");
             return;
         }
 
-        // Soat, minut va sekundlarni hisoblash
+        status.innerText = "Teskari hisob ketmoqda...";
+        
         const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Formatlash (01:05:08 ko'rinishida)
         display.innerText = 
             `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            
     }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(countdownInterval);
+    localStorage.removeItem('targetTimestamp');
+    document.getElementById('display').innerText = "00:00:00";
+    document.getElementById('status').innerText = "Vaqtni belgilang";
+    document.getElementById('targetTime').value = "";
 }
 </script>
 </body>
